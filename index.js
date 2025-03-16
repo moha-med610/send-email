@@ -13,7 +13,10 @@ const port = process.env.PORT
 
 mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Failed to connect to MongoDB', err));
+  .catch(err => {
+    console.error('Failed to connect to MongoDB', err)
+    process.exit(1)
+});
 
 const contactSchema = new mongoose.Schema({
     name: String,
@@ -29,29 +32,30 @@ let transporter = nodemailer.createTransport({
     }
 });
 
-app.post('/api/sendEmail', (req, res) => {
-    const { name, email, message } = req.body;
-
-    if (!name || !email || !message) {
-        return res.status(400).json({ error: 'All fields are required' });
-    }
-    
-    let mailOptions = {
-        from: email,
-        to: process.env.EMAIL,
-        subject: name,
-        text: message
-    };
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            return res.status(400).json({ error: 'Failed to send email' });
-        }else {
-            return res.status(200).json({ success: 'Email sent successfully' });
+app.post('/api/sendEmail', async (req, res) => {
+    try{
+        const { name, email, message } = req.body;
+        
+        if (!name || !email || !message) {
+            return res.status(400).json({ error: 'All fields are required' });
         }
-    })
+        
+        let mailOptions = {
+            from: email,
+            to: process.env.EMAIL,
+            subject: name,
+            text: message
+        };
+
+        await transporter.sendMail(mailOptions)
+
+        res.status(200).json({ message: 'Email sent successfully' });
+
+    }catch(error){
+        res.status(500).json({ error: 'Failed to send email' });
+    }
 
 })
-
 app.listen(port, () => {
     console.log('Server running successfully');
 })
