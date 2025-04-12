@@ -24,6 +24,9 @@ const contactSchema = new mongoose.Schema({
     message: String
 })
 
+const Contact = mongoose.model('Contact', contactSchema)
+
+
 let transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -39,13 +42,16 @@ app.post('/api/sendEmail', async (req, res) => {
         if (!name || !email || !message) {
             return res.status(400).json({ error: 'All fields are required' });
         }
+
+        await Contact.create({ name, email, message })
         
         let mailOptions = {
             from: email,
             to: process.env.EMAIL,
-            subject: name,
-            text: message
+            subject: `New Contact Form Submission from ${name}`,
+            text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`
         };
+        
 
         await transporter.sendMail(mailOptions)
 
