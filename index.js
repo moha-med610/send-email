@@ -11,22 +11,6 @@ app.use(express.json());
 
 const port = process.env.PORT;
 
-mongoose
-  .connect(process.env.MONGO_URL)
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => {
-    console.error("Failed to connect to MongoDB", err);
-    process.exit(1);
-  });
-
-const contactSchema = new mongoose.Schema({
-  name: String,
-  email: String,
-  message: String,
-});
-
-const Contact = mongoose.model("Contact", contactSchema);
-
 let transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -42,8 +26,6 @@ app.post("/api/sendEmail", async (req, res) => {
     if (!name || !email || !message) {
       return res.status(400).json({ error: "All fields are required" });
     }
-
-    await Contact.create({ name, email, message });
 
     let mailOptions = {
       from: email,
