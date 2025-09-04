@@ -85,13 +85,14 @@ app.post("/api/sendEmail", async (req, res) => {
     `,
     };
 
-    await transporter.sendMail(mailOptions);
+    transporter.sendMail(mailOptions).catch(err => console.log("Error sending email:", err));
 
     res.status(200).json({ message: "Email sent successfully" });
   } catch (error) {
     res.status(500).json({ error: "Failed to send email" });
   }
 });
+
 app.listen(port, () => {
   console.log("Server running successfully");
 });
